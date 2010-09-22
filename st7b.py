@@ -3,12 +3,10 @@
 
 import sys, os, math
 import pyfits, datetime
-from gd2jd import gd2jd
-import sidereal
-#from moonpos import moonpos
-from decimal import Decimal as dec # for moonphase
-from gcirc import gcirc
-from posang import posang
+from  st7 import sidereal
+from  st7.posang import posang
+from  st7.gd2jd import gd2jd
+from  st7.gcirc import gcirc
 import ephem #http://pypi.python.org/pypi/pyephem/#downloads
 import ConfigParser
 
