@@ -1,0 +1,9 @@
+
+Installation
+
+py2exe has to be installed
+run create_bin.bat
+compress everything in dist folder as zip archive
+replace C:\Program Files\NSIS\Contrib\zip2exe\Modern.nsh by Modern.nsh located in this folder (if needed)
+run nsis
+run "Installer based on ZIP file" using dist.zip archive
