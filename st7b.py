@@ -116,11 +116,11 @@ for fname in filelist:
   else:
     timobs = datobs[11:]
     datobs = datobs[:10]
-  
+
   dtobs = datetime.datetime.strptime(datobs+" "+timobs, "%Y-%m-%d %H:%M:%S.000")
   juldate = gd2jd(dtobs.year,dtobs.month,dtobs.day,dtobs.hour,dtobs.minute,dtobs.second)
   hdr.update('TJD-OBS', juldate, before='DATE-OBS')
-  
+
   shortobjname = os.path.basename(fname)[:5]
 
   # Start comparision with tabob
@@ -248,7 +248,6 @@ for fname in filelist:
       hdulist.writeto(fileout)
     except IOError:
       os.remove(fileout)
-      hdulist.writeto(fileout)      
-      
+      hdulist.writeto(fileout)
 
 print 'ALL FILES RENAMED, ADDITIONAL INFORMATION INSERTED IN FITS HEADERS'
