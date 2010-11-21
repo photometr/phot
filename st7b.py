@@ -9,7 +9,7 @@ from  st7.gd2jd import gd2jd
 from  st7.gcirc import gcirc
 import ephem #http://pypi.python.org/pypi/pyephem/#downloads
 import ConfigParser
-import st7.progrbar
+import st7.progrbar, st7.progrbarwin
 
 if sys.platform == "linux2": # Linux kernel 2.x
   import Tkinter, tkFileDialog
@@ -48,6 +48,9 @@ else:
     None,
     None
   )
+  PBDlgTemp = st7.progrbarwin.MakeDlgTemplate() #progressbar window
+  m = st7.progrbarwin.TestDialog(PBDlgTemp)
+  m.CreateWindow()
   dirname = shell.SHGetPathFromIDList(pidl)
 
 if debug:
