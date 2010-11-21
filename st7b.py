@@ -9,6 +9,7 @@ from  st7.gd2jd import gd2jd
 from  st7.gcirc import gcirc
 import ephem #http://pypi.python.org/pypi/pyephem/#downloads
 import ConfigParser
+import st7.progrbar
 
 if sys.platform == "linux2": # Linux kernel 2.x
   import Tkinter, tkFileDialog
@@ -32,7 +33,10 @@ elevation = config.getfloat('ST7B', 'elevation')
 
 # Choosing working folder
 if sys.platform == "linux2":
-  root = Tkinter.Tk()
+  root = Tkinter.Tk(className="st7b")
+  m = st7.progrbar.Meter(root, relief='ridge', bd=3)
+  m.pack(fill='x')
+  m.set(0.0, 'Waiting for working folder...')
   dirname = tkFileDialog.askdirectory(parent=root,initialdir=initdirlin,title='Please Choose folder')
 else:
   desktop_pidl, ignore = shell.SHILCreateFromPath(initdirwin, 0)
@@ -60,6 +64,8 @@ def dir_list(dirname, *args):
   return fileList
 
 filelist = dir_list(dirname)
+ratio_of_one_file = 1.0/len(filelist)
+perc_done = 0.0 #fraction of files processed
 
 def GetCoords(alp,delt):
   # Translate coords to floating point values
@@ -249,5 +255,8 @@ for fname in filelist:
     except IOError:
       os.remove(fileout)
       hdulist.writeto(fileout)
+
+  perc_done = perc_done + ratio_of_one_file    #calculate fraction of processed files
+  m.set(perc_done)                             #update progress bar
 
 print 'ALL FILES RENAMED, ADDITIONAL INFORMATION INSERTED IN FITS HEADERS'
