@@ -25,6 +25,8 @@ import sys, os
 import ConfigParser
 import pyfits
 import numpy as np
+from datetime import datetime
+from time import mktime
 
 if sys.platform == "linux2": # Linux kernel 2.x
   import Tkinter, tkFileDialog
@@ -127,14 +129,21 @@ for dark in darks:
   curser = map(lambda x: os.path.join(goodfdirname,x), curseries)
   list_of_darks = []
   jd = 0
+  gd = 0
   for curdark in curser:
     darkdata, header = pyfits.getdata(curdark, 0, header=True)
     list_of_darks.append(darkdata)
     jd = jd + header['TJD-OBS']
-  jd = jd/len(curser)
+    dtobj = datetime.strptime(header['DATE-OBS'], "%Y-%m-%dT%H:%M:%S.000")
+    gd = gd + mktime(dtobj.timetuple()) # to seconds
+  jd = jd/len(curser) + header['EXPTIME']/172800.0 # mean of series
+  gd = gd/len(curser) + header['EXPTIME']/172800.0
+  gd = datetime.fromtimestamp(gd).strftime("%Y-%m-%dT%H:%M:%S")
   meddark = np.median(np.array(list_of_darks), axis=0)
   meandark = meddark.mean()
-  print meandark
+  #FIXME plot graph jd vs meandark
+  header.update('TJD-OBS', jd, 'Middle of the series')
+  header.update('DATE-OBS', gd, 'Middle of the series')
   header.update('HIERARCH MEAN_DARK', meandark, 'As seen by PyFITS+BZERO-100') #FIXME comment
   try:
     pyfits.writeto(outdark, meddark, header)
