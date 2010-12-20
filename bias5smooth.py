@@ -27,6 +27,7 @@ import pyfits
 import numpy as np
 from datetime import datetime
 from time import mktime
+from st7.sigmafilter import sf
 
 if sys.platform == "linux2": # Linux kernel 2.x
   import Tkinter, tkFileDialog
@@ -105,7 +106,6 @@ for fn in os.listdir(os.getcwd()):
   if os.path.splitext(fn)[1] == ".FIT": continue
   if fn.startswith("bias"): continue
   if os.path.isdir(fn): continue
-  print fn
   image, header = pyfits.getdata(fn, 0, header=True)
   imagecl = image - medbias + 100 #FIXME why +100?
   try:
@@ -123,6 +123,8 @@ alldarks = filter(lambda x: x.startswith("dark") and
 darks_no_ext = map(lambda x: os.path.splitext(x)[0], alldarks)
 darks = list(set(darks_no_ext)) # makes elements unique
 
+#meddarkdates = []
+meddarks = {}
 for dark in darks:
   outdark = os.path.join(goodfdirname,dark+".fts")
   curseries = filter(lambda x: os.path.splitext(x)[0] == dark, alldarks)
@@ -136,11 +138,13 @@ for dark in darks:
     jd = jd + header['TJD-OBS']
     dtobj = datetime.strptime(header['DATE-OBS'], "%Y-%m-%dT%H:%M:%S.000")
     gd = gd + mktime(dtobj.timetuple()) # to seconds
-  jd = jd/len(curser) + header['EXPTIME']/172800.0 # mean of series
-  gd = gd/len(curser) + header['EXPTIME']/172800.0
+  jd = jd/len(curser) + header['EXPTIME']/172800. # mean of series
+  #meddarkdates.append(jd)
+  gd = gd/len(curser) + header['EXPTIME']/172800.
   gd = datetime.fromtimestamp(gd).strftime("%Y-%m-%dT%H:%M:%S")
   meddark = np.median(np.array(list_of_darks), axis=0)
   meandark = meddark.mean()
+  meddarks[jd] = meddark
   #FIXME plot graph jd vs meandark
   header.update('TJD-OBS', jd, 'Middle of the series')
   header.update('DATE-OBS', gd, 'Middle of the series')
@@ -150,3 +154,32 @@ for dark in darks:
   except IOError:
     os.remove(outdark)
     pyfits.writeto(outdark, meddark, header)
+
+# calculating mean darks
+meddarkdates = meddarks.keys()
+meddarkdates.sort()
+meandarks = [meddarks[meddarkdates[0]]]
+for i in range(len(meddarkdates)-1):
+  meandarks.append((meddarks[meddarkdates[i]]+meddarks[meddarkdates[i+1]])/2.)
+meandarks.append(meddarks[meddarkdates[-1]])
+
+# subtracting darks from working files
+for fn in os.listdir(goodfdirname):
+  if fn.startswith("dark"): continue
+  if fn.startswith("bias"): continue
+  if os.path.splitext(fn)[1] == "": continue
+  imgdata, header = pyfits.getdata(fn, 0, header=True)
+  obsjd = header['TJD-OBS']
+  objexp = header['EXPTIME']
+  for i in range(len(meddarkdates)):
+    darkjd = meddarkdates[i]
+    if obsjd < darkjd:
+      darknew = ((meandarks[i]-100)/darkexptime*objexp - bzero + 100)
+      climgdata = imgdata - darknew - bzero + 100 #FIXME why?
+      outimag = sf(climgdata,3,5)
+      pyfits.writeto(fn, outimag, header)
+    elif i == len(meddarkdates)-1:
+      darknew = ((meandarks[i+1]-100)/darkexptime*objexp - bzero + 100)
+      climgdata = imgdata - darknew - bzero + 100
+      outimag = sf(climgdata,3,5)
+      pyfits.writeto(fn, outimag, header)
