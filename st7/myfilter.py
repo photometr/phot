@@ -18,17 +18,17 @@ a = np.array([[1.,2,3,4,5,6,7,8,9,10],
 
 f = [i/2. for i in range(250)]
 g = [f for i in range(350)]
-a = np.array(g)
+#a = np.array(g)
 
 def mirror(inpim):
   hlen = len(inpim[0])
   vlen = len(inpim)
   
-  r = np.array(inpim[:,hlen-1])
+  r = np.array(inpim[:,hlen-2])
   r.shape = vlen,1
   re = np.hstack((inpim,r))
   
-  l = np.array(inpim[:,0])
+  l = np.array(inpim[:,1])
   l.shape = vlen,1
   le = np.hstack((l,re))
   
@@ -55,8 +55,11 @@ def filter_image( inpim, size=3, edges=True ):
       #newline.append(subarr.mean())
     #newim.append(newline)
   #outim = np.array(newim)
-  gate = np.array([[1.,1.,1.],[1.,1.,1.],[1.,1.,1.]])
-  outim = convolve(inpim,gate,mode='valid')
+  minpim = mirror(inpim)
+  k = 1./9
+  gate = np.array([[k,k,k],[k,k,k],[k,k,k]])
+  #gate = np.array([[1.,1.,1.],[1.,1.,1.],[1.,1.,1.]])
+  outim = convolve(minpim,gate,mode='valid')
   return outim
   
 #def fun(neighb):
@@ -66,6 +69,7 @@ def filter_image( inpim, size=3, edges=True ):
 #b = ndimage.generic_filter(a, fun, footprint = [[1, 1, 1],[1, 1, 1],[1, 1, 1]], mode='mirror')
 
 #print b
-for i in range(200):
+for i in range(1):
   outim = filter_image( a )
+  print outim
   #print len(outim),len(outim[0])
