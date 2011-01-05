@@ -27,7 +27,7 @@ import pyfits
 import numpy as np
 from datetime import datetime
 from time import mktime
-from st7.sigmafilter import sf
+from st7.sigma_filter import sigma_filter
 
 if sys.platform == "linux2": # Linux kernel 2.x
   import Tkinter, tkFileDialog
@@ -176,10 +176,16 @@ for fn in os.listdir(goodfdirname):
     if obsjd < darkjd:
       darknew = ((meandarks[i]-100)/darkexptime*objexp - bzero + 100)
       climgdata = imgdata - darknew - bzero + 100 #FIXME why?
-      outimag = sf(climgdata,3,5)
-      pyfits.writeto(fn, outimag, header)
+      outimag = sigma_filter(climgdata,sigma=5,box_width=3)
+      try:
+	pyfits.writeto(fn, outimag, header)
+      except IOError:
+	os.remove(fn)
     elif i == len(meddarkdates)-1:
       darknew = ((meandarks[i+1]-100)/darkexptime*objexp - bzero + 100)
       climgdata = imgdata - darknew - bzero + 100
-      outimag = sf(climgdata,3,5)
-      pyfits.writeto(fn, outimag, header)
+      outimag = sigma_filter(climgdata,sigma=5,box_width=3)
+      try:
+	pyfits.writeto(fn, outimag, header)
+      except IOError:
+	os.remove(fn)
