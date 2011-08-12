@@ -9,13 +9,14 @@ from  st7.gd2jd import gd2jd
 from  st7.gcirc import gcirc
 import ephem #http://pypi.python.org/pypi/pyephem/#downloads
 import ConfigParser
-import st7.progrbar, st7.progrbarwin
 
 if sys.platform == "linux2": # Linux kernel 2.x
   import Tkinter, tkFileDialog
+  import st7.progrbar
 else:                        # Windows
   import win32gui
   from win32com.shell import shell, shellcon
+  import st7.progrbarwin
 
 config = ConfigParser.RawConfigParser()
 config.read('config.cfg')
