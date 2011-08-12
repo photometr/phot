@@ -1,4 +1,4 @@
-import sys
+import sys, os
 # http://www.py2exe.org/index.cgi/win32com.shell
 # ModuleFinder can't handle runtime changes to __path__, but win32com uses them
 try:
@@ -31,10 +31,12 @@ import py2exe
 from distutils.core import setup
 import py2exe
 
+
 #mfcdir = "C:\\Python26\\Lib\\site-packages\\pythonwin\\"
 #mfcfiles = [mfcdir+"mfc90.dll", mfcdir+"mfc90u.dll",
 #		mfcdir+"mfcm90.dll",mfcdir+"mfcm90u.dll",mfcdir+"Microsoft.VC90.MFC.manifest"]
 
 #data_files = [("Microsoft.VC90.MFC", mfcfiles),
 #              ]data_files = data_files,
-setup(windows=[{"script":"st7b.py"}])
+MyData_Files = []
+setup(windows=[{"script":"st7b.py"}],data_files = MyData_Files)
